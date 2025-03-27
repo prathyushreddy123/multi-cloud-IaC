@@ -1,0 +1,63 @@
+# .github/workflows/terraform.yml
+name: Terraform Infra Provision
+
+on:
+  push:
+    paths:
+      - "envs/dev/**"
+      - "envs/prod/**"
+      - "modules/**"
+      - "*.tf"
+
+jobs:
+  terraform-dev:
+    name: Apply Dev Infrastructure
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'dev')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      - name: Terraform Init (Dev)
+        run: terraform -chdir=envs/dev init \
+          -backend-config="bucket=multi-cloud-terraform-state" \
+          -backend-config="key=state/dev/terraform.tfstate" \
+          -backend-config="region=us-east-1" \
+          -backend-config="dynamodb_table=terraform-locks"
+
+      - name: Terraform Plan (Dev)
+        run: terraform -chdir=envs/dev plan -var-file=terraform.tfvars
+
+      - name: Terraform Apply (Dev)
+        run: terraform -chdir=envs/dev apply -var-file=terraform.tfvars -auto-approve
+
+  terraform-prod:
+    name: Apply Prod Infrastructure
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'prod')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      - name: Terraform Init (Prod)
+        run: terraform -chdir=envs/prod init \
+          -backend-config="bucket=multi-cloud-terraform-state" \
+          -backend-config="key=state/prod/terraform.tfstate" \
+          -backend-config="region=us-east-1" \
+          -backend-config="dynamodb_table=terraform-locks"
+
+      - name: Terraform Plan (Prod)
+        run: terraform -chdir=envs/prod plan -var-file=terraform.tfvars
+
+      - name: Terraform Apply (Prod)
+        run: terraform -chdir=envs/prod apply -var-file=terraform.tfvars -auto-approve
