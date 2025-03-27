@@ -9,13 +9,13 @@ STATE_BUCKET="multi-cloud-terraform-state"
 STATE_TABLE="terraform-locks"
 STATE_KEY="state/${ENVIRONMENT}/terraform.tfstate"
 
-echo "🔧 Initializing Terraform for environment: $ENVIRONMENT"
-echo "🌍 Region: $REGION"
-echo "🪣 S3 Bucket: $STATE_BUCKET"
-echo "🔐 DynamoDB Table: $STATE_TABLE"
-echo "📁 State Key: $STATE_KEY"
+echo "Initializing Terraform for environment: $ENVIRONMENT"
+echo "Region: $REGION"
+echo "S3 Bucket: $STATE_BUCKET"
+echo "DynamoDB Table: $STATE_TABLE"
+echo "State Key: $STATE_KEY"
 
-cd "envs/$ENVIRONMENT" || { echo "❌ Directory envs/$ENVIRONMENT not found."; exit 1; }
+cd "envs/$ENVIRONMENT" || { echo "Directory envs/$ENVIRONMENT not found."; exit 1; }
 
 terraform init \
   -backend-config="bucket=$STATE_BUCKET" \
